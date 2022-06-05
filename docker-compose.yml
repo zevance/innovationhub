@@ -1,6 +1,25 @@
 version: '3.9'
 
 services:
+  MongoDB:
+    image: mongo:latest
+    networks:
+      - backend
+  
   node-backend:
     container_name: node-backend
-    build: path
+    build: ./node-API
+    restart: always
+    depends_on:
+      - MongoDB
+    networks:
+      - backend
+    ports:
+      - 3000:3000
+
+
+networks:
+  backend:
+
+
+    
