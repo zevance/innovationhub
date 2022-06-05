@@ -7,6 +7,7 @@ const exphbs = require('express-handlebars')
 const passport = require('passport')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')
+const TelegramBot = require('node-telegram-bot-api')
 const connectDB = require('./config/db')
 
 //Load Config
@@ -16,6 +17,8 @@ dotenv.config({ path:'./config/config.env' })
 require('./config/passport')(passport)
 
 connectDB()
+
+const token = '5439952548:AAEjg_LW9ZlbM01rr7xJArE69g_G_UrfRQw'
 
 const app = express()
 
@@ -35,6 +38,30 @@ app.use(session({
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URI})
   }))
+
+// Create a bot that uses 'polling' to fetch new updates
+const bot = new TelegramBot(token, {polling: true})
+
+// Matches "/echo [whatever]"
+bot.onText(/\/echo (.+)/, (msg, match) => {
+// 'msg' is the received Message from Telegram
+// 'match' is the result of executing the regexp above on the text content
+// of the message
+  
+    const chatId = msg.chat.id
+    const resp = match[1] // the captured "whatever"
+  
+// send back the matched "whatever" to the chat
+    bot.sendMessage(chatId, resp)
+  })
+
+// Listen for any kind of message. There are different kinds of
+// messages.
+bot.on('message', (msg) => {
+    const chatId = msg.chat.id
+// send a message to the chat acknowledging receipt of their message
+    bot.sendMessage(chatId, 'Received your message')
+  })
 
 //Passport middleware
 app.use(passport.initialize())
